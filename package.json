@@ -1,0 +1,29 @@
+{
+  "name": "nr-tests",
+  "version": "1.0.0",
+  "description": "nr-tests",
+  "main": "index.js",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "image-diff": "^1.6.3",
+    "imagemagick": "^0.1.3",
+    "mocha": "^3.5.0",
+    "resemblejs": "^2.2.4",
+    "selenium-webdriver": "^3.5.0"
+  },
+  "devDependencies": {
+    "mocha-clean": "^1.0.0"
+  },
+  "scripts": {
+    "start": "mocha --require mocha-clean index.js || ECHO",
+    "test": "test",
+    "jshint": "jshint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://schinowski@bitbucket.org/schinowski/nr-tests.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/schinowski/nr-tests#readme"
+}
