@@ -1,6 +1,7 @@
 const fs = require('fs');
 const _ = require('lodash');
 const assert = require('assert');
+const phantomjs = require('phantomjs')
 const webdriver = require('selenium-webdriver'),
     By = webdriver.By,
     until = webdriver.until;
