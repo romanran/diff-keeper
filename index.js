@@ -1,5 +1,6 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const _ = require('lodash');
+const moment = require('moment');
 const assert = require('assert');
 const phantomjs = require('phantomjs')
 const webdriver = require('selenium-webdriver'),
@@ -7,11 +8,32 @@ const webdriver = require('selenium-webdriver'),
     until = webdriver.until;
 const imageDiff = require('image-diff');
 const width = 1920;
-//const height = 1080;
+const height = 1080;
 
 const driver = new webdriver.Builder()
     .forBrowser('phantomjs')
     .build();
+
+const hostname = 'networkrail'
+
+
+function getLastFile(dir) {
+    const files = fs.readdirSync(dir);
+    return _.max(files, (f) => {
+        const fullpath = path.join(dir, f);
+        return fs.statSync(fullpath).ctime;
+    });
+}
+
+const prev_date = getLastFile('screenshots/' +  '/' + hostname + '/');
+
+const prev_path = 'screenshots/' +  '/' + hostname + '/' +  prev_date + '/' + width + '_' + height + '/';
+
+const current_path = 'screenshots/' +  '/' + hostname + '/' +  moment().format('YYYY-MM-D H-mm') + '/' + width + '_' + height + '/';
+
+fs.ensureDir(current_path, err => {
+  if(err) console.log(err);
+});
 
 webdriver.WebDriver.prototype.saveScreenshot = function(filename) {
     return driver.takeScreenshot().then(function(data) {
@@ -25,8 +47,8 @@ function processScrenshoots(driver, name) {
     return new Promise(function(resolve, reject) {
         name = _.kebabCase(name);
         let file = {
-            curr: `screenshots/${name}_current.png`,
-            prev: `screenshots/${name}_previous.png`
+            curr: `${current_path}${name}_current.png`,
+            prev: `${prev_path}${name}_current.png`
         };
         setTimeout(() => {
             driver.saveScreenshot(file.curr).then(function() {
@@ -34,22 +56,22 @@ function processScrenshoots(driver, name) {
                     imageDiff.getFullResult({
                         actualImage: file.curr,
                         expectedImage: file.prev,
-                        diffImage: `screenshots/${name}_difference.png`,
+                        diffImage: `${current_path}${name}_difference.png`,
                         shadow: true
                     }, function(err, result) {
-                        fs.unlinkSync(file.prev);
-                        fs.renameSync(file.curr, file.prev);
+                        //fs.unlinkSync(file.prev);
+                        //fs.renameSync(file.curr, file.prev);
                         if (err) return reject(err);
                         return resolve(result);
                     });
                 } else {
-                    fs.renameSync(file.curr, file.prev);
+                    //fs.renameSync(file.curr, file.prev);
                     return resolve({
                         message: 'No previous file'
                     });
                 }
             });
-        }, 5000);
+        }, 8000);
     });
 }
 /*
@@ -60,7 +82,10 @@ let pages = [{
     url: 'https://networkrail.co.uk/',
     elements: [{
         by: 'className',
-        selector: 'cookie_notification'
+        selector: 'cookie_notification',
+        action: 'click',
+        screenshotAfter: true,
+        screenshotBefore: true,
     }, {
         by: 'id',
         selector: 'main-header'
@@ -102,7 +127,7 @@ Promise.all(tests).then(() => {
 function testPage(page) {
     return new Promise(function(resolve, reject) {
         describe(page.name, () => {
-            it('should open homepage', function(done) {
+            it('should open', function(done) {
                 this.timeout(0);
                 driver.get(page.url).then((err, data) => {
                     setTimeout(() => {
@@ -114,9 +139,8 @@ function testPage(page) {
                 driver.findElement(By.xpath('//html')).then((el) => {
                     driver.executeScript(function() {
                         return document.getElementsByTagName('body')[0].scrollHeight;
-                    }).then(function(height) {
+                    }).then(function(h) {
                         //console.log(height);
-                        height = 1080;
                         driver.manage().window().setSize(width, height);
                         done();
                     });
@@ -144,7 +168,7 @@ function testPage(page) {
                     } catch (e) {
                         //console.log('e: ', e);
                         resolve();
-                        return done(e);
+                        return done();
                     }
                     resolve();
                     done();
