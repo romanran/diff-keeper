@@ -1,29 +1,14 @@
-<div class="card-header">
-	Test results
-</div>
-<div class="card-body">
-	<div class="row">
-		{{#each images}}
-		<div class="col-4" style="height: 250px;">
-			<button style="height: 250px; overflow: hidden;" data-toggle="modal" data-target="#{{@index}}">
-			<img class="img-thumbnail" src="screenshots/{{.}}">
-			</button>
-		</div>
-		<div class="modal w-100 fade" id="{{@index}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog mw-100" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Screen preview</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<img class="w-100" src="screenshots/{{.}}">
-					</div>
-				</div>
+<div class="card">
+	<div class="card-header">
+		Projects
+	</div>
+	<div class="card-body">
+		<div class="row mb-3">
+			{{#each projects}}
+			<div class="col-2">
+				<a class="btn btn-primary" href="{{.}}">{{.}}</a>
 			</div>
+			{{/each}}
 		</div>
-		{{/each}}
 	</div>
 </div>

@@ -30,3 +30,5 @@ node_modules
 xunit\.xml
 
 screenshots/
+
+package-lock\.json

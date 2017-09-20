@@ -29,10 +29,10 @@ const prev_date = getLastFile('screenshots/' +  '/' + hostname + '/');
 
 const prev_path = 'screenshots/' +  '/' + hostname + '/' +  prev_date + '/' + width + '_' + height + '/';
 
-const current_path = 'screenshots/' +  '/' + hostname + '/' +  moment().format('YYYY-MM-D H-mm') + '/' + width + '_' + height + '/';
+const current_path = 'screenshots/' +  '/' + hostname + '/' +  moment().format('YYYY-MM-D HH-mm') + '/' + width + '_' + height + '/';
 
 fs.ensureDir(current_path, err => {
-  if(err) console.log(err);
+  //if(err) console.log(err);
 });
 
 webdriver.WebDriver.prototype.saveScreenshot = function(filename) {

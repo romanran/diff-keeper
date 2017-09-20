@@ -1,0 +1,33 @@
+{{#each dates}}
+<div class="card mb-5">
+	<div class="card-header">
+		{{@key}}
+	</div>
+	<div class="card-body">
+		<div class="row">
+			{{#each .}}
+			<div class="col-4" style="height: 250px;">
+				<button class="btn btn-link" style="height: 250px; overflow: hidden;" data-toggle="modal" data-target="#{{@index}}">
+				<img class="img-thumbnail" src="{{.}}">
+				</button>
+			</div>
+			<div class="modal w-100 fade" id="{{@index}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog mw-100" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="exampleModalLabel">Screen preview</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<img class="w-100" src="{{.}}">
+						</div>
+					</div>
+				</div>
+			</div>
+			{{/each}}
+		</div>
+	</div>
+</div>
+{{/each}}

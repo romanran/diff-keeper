@@ -1,17 +1,19 @@
+<div class="card">
 <div class="card-header">
 	Test overview
 </div>
 <div class="card-body">
 	<div class="row">
-		<ul class="list-group">
+		<ul class="list-group w-100">
 			{{#each tests}}
-			{{#if err}}
+			{{#each err}}
 			<li class="list-group-item list-group-item-danger">
 			{{else}}
 			<li class="list-group-item list-group-item-success">
-			{{/if}}
+			{{/each}}
 		  	{{fullTitle}}</li>
 		  	{{/each}}
 		</ul>
 	</div>
+</div>
 </div>
