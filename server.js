@@ -24,7 +24,7 @@ app.get('/', function (req, res) {
 });
 let i = 0;
 app.get('/rtfs', (req, res)=>{
-	const screenshoter = require('child_process').exec('npm start').stdout.on('data', (e)=>{
+	const screenshoter = require('child_process').exec('npm run new').stdout.on('data', (e)=>{
 		if(i == 1){
 			//console.log(e)
 			//res.send(e);
