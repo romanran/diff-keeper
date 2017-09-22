@@ -4,7 +4,7 @@ const moment = require('moment');
 const path = require('path');
 const imageDiff = require('image-diff');
 const assert = require('assert');
-const phantomjs = require('phantomjs')
+const phantomjs = require('phantomjs');
 const webdriver = require('selenium-webdriver'),
     By = webdriver.By,
     until = webdriver.until;
@@ -36,18 +36,19 @@ class Tester {
                 _.forEach(this.resolutions, (resolution) => {
                     this.tasks.push(this.setResolution.bind(this, resolution));
                     _.forEach(this.pages, (page) => {
-                        this.tasks.push(this.processTests.bind(this, page, resolution));
+                        this.tasks.push(this.processTests.bind(this, page, resolution, browser));
                     });
                 });
+                //this.tasks.push(this.killBrowser.bind(this, browser));
             });
             const _p = this;
             describe(`Testing ${_p.project.name}`, function() {
                 async.series(_p.tasks, (err, data) => {
-                    console.log('err async: ', err, 'data async: ', data);
+                    //console.log('err async: ', err, 'data async: ', data);
                     resolve();
-                })
-            })
-        })
+                });
+            });
+        });
     }
 
     startBrowser(browser, done) {
@@ -55,29 +56,37 @@ class Tester {
             .forBrowser(browser)
             .build();
         done(null);
-    };
+    }
+
+    killBrowser(browser, done){        
+        this.driver.quit().then((err, data) => {
+            console.log(err);
+            done();
+        });
+    }
 
     setResolution(resolution, task_done) {
         const driver = this.driver;
         task_done(null);
     }
 
-    processTests(page, resolution, all_done) {
+    processTests(page, resolution, browser, all_done) {
         const driver = this.driver;
         let tests = [];
         const _p = this;
         tests.push(function(test_done) {
+            it(`should change resolution to ${resolution.width} x ${resolution.height} px`, function(resized) {
+            this.timeout(0);
+                driver.manage().window().setSize(resolution.width, resolution.height).then(resized);
+                //resized();
+            });
             it('should open', function(done) {
-                this.timeout(0);
+            this.timeout(0);
                 driver.get(page.url).then((err, data) => {
                     setTimeout(() => {
                         done();
-                    }, 5000);
+                    }, 3000);
                 });
-            });
-            it(`Change resolution to ${resolution.width} x ${resolution.height}`, function(resized) {
-                driver.manage().window().setSize(resolution.width, resolution.height);
-                resized();
             });
             _.forEach(page.elements, (element) => {
                 it(`should have element with ` + element.by + ` ` + element.selector + ` present`, (done) => {
@@ -90,11 +99,12 @@ class Tester {
             });
             it('should have less difference than 10%', function(done) {
                 this.timeout(0);
-                _p.processScreenshots.call(_p, page.name, resolution).then((result) => {
+                _p.processScreenshots.call(_p, page.name, resolution, browser).then((result) => {
                     //console.log(result);
                     if (result.message) {
                         console.log(result.message);
-                        return done(null);
+                        test_done();
+                        done();
                     }
                     try {
                         assert.equal(result.percentage * 100 < 10, true, Math.floor(result.percentage * 100, 2) + '%');
@@ -102,11 +112,9 @@ class Tester {
                         //console.log('e: ', e);
                         return done();
                     }
-                    console.log('spoko')
                     test_done();
                     done();
                 }).catch((err) => {
-                    console.log('errorrrr: ', err)
                     test_done();
                     done(err);
                 });
@@ -118,7 +126,7 @@ class Tester {
             async.series(tests, (err, data) => {
                 //done_check();
                 all_done(null, data);
-            })
+            });
         });
     }
 
@@ -129,11 +137,11 @@ class Tester {
      * @param  {int} height   browser height*
      * @return {array} paths
      */
-    preparePaths(project, resolution) {
+    preparePaths(project, resolution, browser) {
         return new Promise((resolve, reject) => {
             const prev_date = this.getLastFile('screenshots/' + '/' + project + '/');
-            const prev_path = 'screenshots/' + project + '/' + prev_date + '/' + resolution.width + '_' + resolution.height + '/';
-            const curr_path = 'screenshots/' + project + '/' + this.time + '/' + resolution.width + '_' + resolution.height + '/';
+            const prev_path = 'screenshots/' + project + '/' + prev_date + '/' + resolution.width + '_' + resolution.height + '/' + browser + '/';
+            const curr_path = 'screenshots/' + project + '/' + this.time + '/' + resolution.width + '_' + resolution.height + '/' + browser + '/';
             fs.ensureDir(curr_path, err => {
                 if (err) console.log(err);
                 resolve({
@@ -141,14 +149,14 @@ class Tester {
                     curr_path: path.resolve(curr_path)
                 });
             });
-        })
+        });
     }
 
-    processScreenshots(name, resolution) {
+    processScreenshots(name, resolution, browser) {
         const driver = this.driver;
         return new Promise((resolve, reject) => {
             name = _.kebabCase(name);
-            this.preparePaths(this.project.name, resolution).then((file_paths) => {
+            this.preparePaths(this.project.name, resolution, browser).then((file_paths) => {
                 setTimeout(() => {
                     driver.saveScreenshot(file_paths.curr_path + '/' + name + '.png', driver).then(function() {
                         if (fs.existsSync(file_paths.prev_path + '/' + name + '.png')) {

@@ -8,6 +8,7 @@
     "async": "^2.5.0",
     "chromedriver": "^2.32.3",
     "express": "^4.15.4",
+    "express-basic-auth": "^1.1.2",
     "express-handlebars": "^3.0.0",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
@@ -32,7 +33,7 @@
     "reporters": "mocha --reporters",
     "watch": "pm2 start server.json",
     "start": "mocha --require mocha-clean -R JSON index.js || true",
-    "new": "mocha --require mocha-clean --ui bdd -R JSON run.js",
+    "new": "mocha --require mocha-clean --ui bdd -R spec run.js",
     "test": "test",
     "jshint": "jshint"
   },

@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const _ = require('lodash');
 const glob = require('glob');
 const app = express();
+const basicAuth = require('express-basic-auth')
 const serveIndex = require('serve-index');
 const path = require('path');
 
@@ -13,6 +14,10 @@ app.set('view engine', 'handlebars');
 let data = [];
 
 
+app.use(basicAuth({
+    users: { 'admin': 'IloveTDSOFT' },
+    challenge: true,
+}))
 
 app.get('/', function (req, res) {
 	fs.readdir('screenshots', (err, files)=>{
@@ -45,7 +50,7 @@ app.get('/:project/', (req, res)=>{
 		const dates = _.groupBy(files, (file)=>{
 			return path.parse(file).dir.split('/')[2];
 		})
-		console.log(dates);
+		//console.log(dates);
 		res.render('project', {dates: dates})
 	})
 });
