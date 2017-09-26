@@ -17,12 +17,6 @@ class Screenshoter {
                 height: 1024,
                 width: 1366
             }, {
-                height: 1366,
-                width: 1024
-            }, {
-                height: 425,
-                width: 856
-            }, {
                 height: 856,
                 width: 425
             }],
@@ -60,7 +54,7 @@ class Screenshoter {
                     selector: 'main-header'
                 }]
             }]
-        }]
+        }];
     }
 
     /**
@@ -82,7 +76,7 @@ class Screenshoter {
     run() {
         const tester = new Tester(this.projects[0]);
         tester.run().then(() => {
-            console.log('wykuirwilo wszystko!!!');
+            console.log('Tests done.');
         });
     }
 
