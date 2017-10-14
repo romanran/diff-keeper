@@ -3,25 +3,52 @@ const exphbs = require('express-handlebars');
 const fs = require('fs-extra');
 const _ = require('lodash');
 const glob = require('glob');
-const app = express();
 const basicAuth = require('express-basic-auth')
 const serveIndex = require('serve-index');
 const path = require('path');
 
+const app = express();
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
-let data = [];
+/*
+Generate new hash
+const bcrypt = require('bcrypt');
+const hash = bcrypt.hashSync('g63omKnbpiIl', bcrypt.genSaltSync(10));
+console.log(hash);
+ */
+
+function authoriseUser(username, password, authorise) {
+	const Bcrypt = require('bcrypt');
+	let users = _.map(require('./users'), (pass, i) => {
+		return {
+			username: i,
+			password: pass
+		};
+	});
+	let user = users[_.findIndex(users, {'username': username})];
+	if (_.isEmpty(user)) {
+		return authorise(null, false);
+	}
+	console.log(password, user.password);
+	Bcrypt.compare(password, user.password, (err, is_valid) => {
+		console.log('valid', is_valid);
+		if (err) {
+			console.log(err);
+		}
+		return authorise(null, is_valid);
+	});
+}
 
 app.use(basicAuth({
-	users: require('./users'),
-	authorizer: myAsyncAuthorizer,
+	authorizer: authoriseUser,
+	authorizeAsync: true,
 	challenge: true,
 }));
 
 app.get('/', function (req, res) {
-	fs.readdir('screenshots', (err, files) => {
-		data = {
+	fs.readdir('../screenshots', (err, files) => {
+		let data = {
 			projects: files
 		};
 		res.render('home', data);
