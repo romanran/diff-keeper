@@ -2,11 +2,12 @@
   "name": "nr-tests",
   "version": "1.0.0",
   "description": "nr-tests",
-  "main": "index.js",
+  "main": "scripts/Tester.js",
   "dependencies": {
     "assert": "^1.4.1",
     "async": "^2.5.0",
     "bcrypt": "^1.0.3",
+    "chalk": "^2.1.0",
     "chromedriver": "^2.33.1",
     "express": "^4.16.2",
     "express-basic-auth": "^1.1.2",
@@ -15,7 +16,6 @@
     "glob": "^7.1.2",
     "image-diff": "^1.6.3",
     "imagemagick": "^0.1.3",
-    "jshint": "^2.9.5",
     "lodash": "^4.17.4",
     "mocha": "^3.5.3",
     "moment": "^2.19.1",
@@ -26,20 +26,23 @@
     "serve-index": "^1.9.1"
   },
   "devDependencies": {
+    "jshint-stylish": "^2.2.1",
+    "jshint": "^2.9.5",
     "mocha-clean": "^1.0.0",
     "xunit-file": "^1.0.0"
   },
   "scripts": {
     "pm2": "pm2",
+    "mocha": "mocha",
+    "jshint": "jshint",
     "reporters": "mocha --reporters",
-    "watch": "pm2 start server/server.json && pm2 logs diff-keeper --raw",
+    "serve": "pm2 start server/server.json && pm2 logs diff-keeper --raw",
+    "serve:dev": "SET NODE_ENV=\"development\" && pm2 start server/server.json && pm2 logs diff-keeper --raw",
     "stop": "pm2 stop diff-keeper",
     "exit": "npm run stop && pm2 delete diff-keeper",
-    "restart": "npm run exit && npm run watch",
-    "start": "mocha --require mocha-clean -R JSON run.js",
-    "new:spec": "mocha --require mocha-clean -R spec run.js",
-    "test": "test",
-    "jshint": "jshint"
+    "restart": "npm run exit && npm run serve:dev",
+    "start": "mocha --require mocha-clean -R JSON main.js",
+    "new:spec": "mocha --require mocha-clean -R spec main.js"
   },
   "repository": {
     "type": "git",

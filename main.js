@@ -1,4 +1,18 @@
-const Screenshoter = require('./screenshoter');
+const path = require('path');
 
-const screenshoter = new Screenshoter();
-screenshoter.run();
+function startTests() {
+	return new Promise((resolve, reject) => {
+		let Mocha = require('mocha');
+		require('mocha-clean');
+		let mocha = new Mocha({
+			timeout: 0,
+			useColors: 1,
+			reporter: 'JSON'
+		});
+		mocha.addFile(path.resolve('./runTests.js'));
+		mocha.run().on('end', function () {
+			resolve(this.testResults);
+		});
+	});
+};
+module.exports = startTests;

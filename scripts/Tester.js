@@ -5,9 +5,17 @@ const path = require('path');
 const imageDiff = require('image-diff');
 const assert = require('assert');
 const phantomjs = require('phantomjs');
-const webdriver = require('selenium-webdriver'),
-	By = webdriver.By,
-	until = webdriver.until;
+const webdriver = require('selenium-webdriver');
+
+const promise = function () {
+	let resolve, reject;
+	let q = new Promise((res, rej) => {
+		resolve = res;
+		reject = rej;
+	});
+	return {q: q, resolve: resolve, reject: reject};
+};
+
 webdriver.WebDriver.prototype.saveScreenshot = function (filename, driver) {
 	return new Promise((resolve, reject) => {
 		driver.takeScreenshot().then(function (data) {
@@ -18,169 +26,212 @@ webdriver.WebDriver.prototype.saveScreenshot = function (filename, driver) {
 		});
 	});
 };
+
 const async = require('async');
+const screenshots_dir = path.resolve('./screenshots');
+
 class Tester {
 	constructor(project) {
 		this.project = project;
-		this.browsers = this.project.browsers;
-		this.resolutions = this.project.resolutions;
-		this.pages = this.project.pages;
+		this.valid = false;
+		if (_.has(this.project, 'browsers') && _.has(this.project, 'resolutions') && _.has(this.project, 'pages')) {
+			this.browsers = this.project.browsers;
+			this.resolutions = this.project.resolutions;
+			this.pages = this.project.pages;
+			this.valid = true;
+		}
 		this.tasks = [];
 		this.time = moment().format('YYYY-MM-D HH-mm');
+		fs.ensureDir(screenshots_dir);
+		this.results_for_tests = [];
 	}
 
 	run() {
-		return new Promise((resolve, reject) => {
-			_.forEach(this.browsers, (browser) => {
-				this.tasks.push(this.startBrowser.bind(this, browser));
-				_.forEach(this.resolutions, (resolution) => {
-					this.tasks.push(this.setResolution.bind(this, resolution));
-					_.forEach(this.pages, (page) => {
-						this.tasks.push(this.processTests.bind(this, page, resolution, browser));
-					});
-				});
-				//this.tasks.push(this.killBrowser.bind(this, browser));
-			});
-			const _p = this;
-			describe(`Testing ${_p.project.name}`, function () {
-				async.series(_p.tasks, (err, data) => {
-					//console.log('err async: ', err, 'data async: ', data);
-					resolve();
-				});
+		const q = promise();
+		const project = this.project;
+		describe('Project test', function () {
+			it('project has necessary info', function () {
+				return assert.ok(_.has(project, 'browsers') && _.has(project, 'resolutions') && _.has(project, 'pages'));
 			});
 		});
+		if (!(_.has(this.project, 'browsers') && _.has(this.project, 'resolutions') && _.has(this.project, 'pages'))) {
+			q.reject(assert(0, 'Invalid project file'));
+		}
+
+		_.forEach(this.browsers, (browser) => {
+			this.tasks.push(this.startBrowser.bind(this, browser));
+			_.forEach(this.pages, (page) => {
+				_.forEach(this.resolutions, (resolution) => {
+					// this.tasks.push(this.setResolution.bind(this, resolution));
+					this.tasks.push(this.processTests.bind(this, page, resolution, browser));
+				});
+			});
+			this.tasks.push(this.killBrowser.bind(this, browser));
+		});
+		const tasks = this.tasks;
+		async.series(tasks, function (err, data) {
+			deb('ran tasks');
+			if (err) {
+				return q.reject(err);
+			}
+			//console.log('err async: ', err, 'data async: ', data);
+			return q.resolve(data);
+		});
+		return q.q;
 	}
 
 	startBrowser(browser, done) {
 		this.driver = new webdriver.Builder()
 			.forBrowser(browser)
 			.build();
-		done(null);
+		done();
 	}
 
 	killBrowser(browser, done) {
+		deb('killing it');
 		this.driver.quit().then((err, data) => {
-			console.log(err);
-			done();
+			_.unset(this, 'driver');
+			done(err);
 		});
 	}
 
-	setResolution(resolution, task_done) {
-		const driver = this.driver;
-		task_done(null);
+	handleTestError(err) {
+		if (!_.isEmpty(err)){
+			if (_.has(err, 'message')) {
+				err = err.message;
+			}
+			this.results_for_tests.errors.push(err);
+		}
 	}
 
 	processTests(page, resolution, browser, all_done) {
 		const driver = this.driver;
-		let tests = [];
-		const _p = this;
-		tests.push(function (test_done) {
-			it(`should change resolution to ${resolution.width} x ${resolution.height} px`, function (resized) {
-				this.timeout(0);
-				driver.manage().window().setSize(resolution.width, resolution.height).then(resized);
-				//resized();
-			});
-			it('should open', function (done) {
-				this.timeout(0);
-				driver.get(page.url).then((err, data) => {
+		let tasks = [];
+		const results = {
+			nominal: {
+				page: {
+					name: page.name,
+					url: page.url
+				},
+				window: {
+					resolution: {
+						width:resolution.width,
+						height: resolution.height
+					}
+				},
+				browser: browser
+			},
+			errors: []
+		};
+		tasks.push(
+			done => {
+				driver.manage().window().setSize(resolution.width, resolution.height).then(err => {
+					const size = driver.manage().window().getSize();
+					_.set(results, 'window.resolution.width',size[0]);
+					_.set(results, 'window.resolution.height', size[1]);
+					done();
+					this.handleTestError(err);
+				});
+			}, (done) => {
+				return driver.get(page.url).then((err, data) => {
+					deb('received data from ',page.url, data);
+					this.handleTestError(err);
 					setTimeout(() => {
-						done();
+						return done(null);
 					}, 3000);
 				});
-			});
-			_.forEach(page.elements, (element) => {
-				it(`should have element with ` + element.by + ` ` + element.selector + ` present`, (done) => {
-					driver.findElement(webdriver.By[element.by](element.selector)).then(function (webElement) {
-						done();
-					}, function (err) {
-						done(err);
-					});
-				});
-			});
-			it('should have less difference than 10%', function (done) {
-				this.timeout(0);
-				_p.processScreenshots.call(_p, page.name, resolution, browser).then((result) => {
-					//console.log(result);
-					if (result.message) {
-						console.log(result.message);
-						test_done();
-						done();
+			}
+		);
+		_.forEach(page.elements, (element) => {
+			tasks.push(done => {
+				return driver.findElement(webdriver.By[element.by](element.selector)).then(function (webElement) {
+					if (webElement) {
+						return done(null);
 					}
-					try {
-						assert.equal(result.percentage * 100 < 10, true, Math.floor(result.percentage * 100, 2) + '%');
-					} catch (e) {
-						//console.log('e: ', e);
-						return done();
-					}
-					test_done();
-					done();
-				}).catch((err) => {
-					test_done();
-					done(err);
+					this.handleTestError(`${element.selector} not found`);
+					return done(null);
+				}, function (err) {
+					this.handleTestError(err);
+					return done(null);
 				});
 			});
 		});
-
-		describe(`Checking ${page.name}`, function () {
-			async.series(tests, (err, data) => {
-				//done_check();
-				all_done(null, data);
+		tasks.push(done => {
+			return this.processScreenshots(page.name, resolution, browser).then((result) =>{
+				//console.log(result);
+				if (result.message) {
+					deb(result.message);
+				}
+				done(null, result);
+			}).catch(err => {
+				this.handleTestError(err);
+				done(null);
 			});
 		});
-	}
 
-	/**
-	 * Set this.prev_path and this.current_path
-	 * @param  {string} project project for project
-	 * @param  {int} width    browser width
-	 * @param  {int} height   browser height*
-	 * @return {array} paths
-	 */
-	preparePaths(project, resolution, browser) {
-		return new Promise((resolve, reject) => {
-			const prev_date = this.getLastFile('screenshots/' + '/' + project + '/');
-			const prev_path = 'screenshots/' + project + '/' + prev_date + '/' + resolution.width + '_' + resolution.height + '/' + browser + '/';
-			const curr_path = 'screenshots/' + project + '/' + this.time + '/' + resolution.width + '_' + resolution.height + '/' + browser + '/';
-			fs.ensureDir(curr_path, err => {
-				if (err) console.log(err);
-				resolve({
-					prev_path: path.resolve(prev_path),
-					curr_path: path.resolve(curr_path)
-				});
-			});
+		async.series(tasks, (err, data) => {
+			this.results_for_tests.push(results);
+			this.handleTestError(err);
+			all_done(err, data);
 		});
 	}
 
 	processScreenshots(name, resolution, browser) {
 		const driver = this.driver;
-		return new Promise((resolve, reject) => {
-			name = _.kebabCase(name);
-			this.preparePaths(this.project.name, resolution, browser).then((file_paths) => {
-				setTimeout(() => {
-					driver.saveScreenshot(file_paths.curr_path + '/' + name + '.png', driver).then(function () {
-						if (fs.existsSync(file_paths.prev_path + '/' + name + '.png')) {
-							imageDiff.getFullResult({
-								actualImage: file_paths.curr_path + '/' + name + '.png',
-								expectedImage: file_paths.prev_path + '/' + name + '.png',
-								diffImage: file_paths.curr_path + '/' + name + '_difference.png',
-								shadow: true
-							}, function (err, result) {
-								if (err) return reject(err);
-								return resolve(result);
-							});
-						} else {
-							return resolve({
-								message: 'No previous file'
-							});
-						}
-					});
-				}, 8000);
+		const q = promise();
+		name = _.kebabCase(name);
+		const tasks = [
+			(done) => {
+				this.preparePaths(this.project.name, resolution, browser).then(paths => done(null, paths)).catch(done);
+			},
+			(paths, done) => {
+				console.log(paths);
+				setTimeout(() => done(null, paths), 8000);
+			},
+			(paths, done) => {
+				driver.saveScreenshot(`${paths.curr}/${name}.png`, driver).then(data => done(null, paths));
+			}
+		];
+		async.waterfall(tasks, (err, file_paths) => {
+			if (err) {
+				return q.reject(err);
+			}
+			if (!fs.existsSync(`${file_paths.prev}/${name}.png`)) {
+				return q.resolve({
+					message: 'No previous file'
+				});
+			}
+			imageDiff.getFullResult({
+				actualImage: `${file_paths.curr}/${name}.png`,
+				expectedImage: `${file_paths.prev}/${name}.png`,
+				diffImage: `${file_paths.curr}/${name}_difference.png`,
+				shadow: true
+			}, function (err, result) {
+				if (err) return q.reject(err);
+				return q.resolve(result);
 			});
+		});
+
+		return q.q;
+	}
+
+	preparePaths(project, resolution, browser) {
+		const q = promise();
+		const prev_date = this.getLastFile(`screenshots/${project}/`);
+		const paths = {
+			prev: path.resolve(`${screenshots_dir}/${project}/${prev_date}/${resolution.width}_${resolution.height}/${browser}/`),
+			curr: path.resolve(`${screenshots_dir}/${project}/${this.time}/${resolution.width}_${resolution.height}/${browser}/`)
+		};
+		fs.ensureDir(paths.curr, err => {
+			if (err) {
+				return q.reject(err);
+			}
+			return q.resolve(paths);
 		});
 	}
 
 	getLastFile(dir) {
-		const files = fs.readdirSync(dir);
+		const files = fs.readdirSync(path.resolve(dir));
 		return _.max(files, (f) => {
 			const fullpath = path.join(dir, f);
 			return fs.statSync(fullpath).ctime;

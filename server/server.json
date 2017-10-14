@@ -4,7 +4,8 @@
             "name": "diff-keeper",
             "script": "server/server.js",
             "watch": [
-                "**/*.js"
+                "**/*.js",
+                "server/*.json"
             ],
             "log_date_format": "YYYY-MM-DD HH:mm",
             "restart_delay": 4000,
@@ -13,7 +14,8 @@
                 "--color"
             ],
             "env": { 
-                "DEBUG_COLORS": true 
+                "DEBUG_COLORS": true,
+                "NODE_ENV": "development"
             }
         }
     ]
