@@ -32,8 +32,7 @@
     "pm2": "pm2",
     "reporters": "mocha --reporters",
     "watch": "pm2 start server.json",
-    "start": "mocha --require mocha-clean -R JSON index.js || true",
-    "new": "mocha --require mocha-clean -R JSON run.js",
+    "start": "mocha --require mocha-clean -R JSON run.js",
     "new:spec": "mocha --require mocha-clean -R spec run.js",
     "test": "test",
     "jshint": "jshint"
