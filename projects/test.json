@@ -1,0 +1,27 @@
+{
+	"name": "google",
+	"browsers": [
+		"chrome"
+	],
+	"resolutions": [
+		{
+			"width": 1920,
+			"height": 1080
+		}
+	],
+	"pages": [
+		{
+			"name": "Homepage",
+			"url": "https://www.google.com/",
+			"elements": [
+				{
+					"by": "className",
+					"selector": "gsfi",
+					"action": "click",
+					"screenshotAfter": true,
+					"screenshotBefore": true
+				}
+			]
+		}
+	]
+}

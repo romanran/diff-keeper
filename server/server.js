@@ -63,7 +63,7 @@ app.get('/', function (req, res) {
 	});
 });
 
-app.get('/rtfs', (req, res) => {
+app.get('/run-tests', (req, res) => {
 	const Tests = require('../main');
 	Tests().then(result => {
 		res.render('results', result);
