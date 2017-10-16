@@ -31,10 +31,11 @@ function runTests(Project) {
 		});
 	});
 	_.forEach(Project.tests, function (test) {
+		deb(test);
 		describe(`${test.page.name} screenshot`, function () {
 			//
 			forEach(test.dom_elements)
-				.it(`has element `, function (element) {8
+				.it(`has element `, function (element) {
 					return assert.ok(_.isObject(element.found));
 				});
 

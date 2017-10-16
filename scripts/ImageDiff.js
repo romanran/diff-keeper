@@ -57,8 +57,8 @@ class ImageDiff {
 
 		_.forEach(this.browsers, (browser) => {
 			this.tasks.push(this.startBrowser.bind(this, browser));
-			_.forEach(this.pages, (page) => {
-				_.forEach(this.resolutions, (resolution) => {
+			_.forEach(this.resolutions, (resolution) => {
+				_.forEach(this.pages, (page) => {
 					this.tasks.push(this.processTests.bind(this, page, resolution, browser));
 				});
 			});
@@ -107,7 +107,6 @@ class ImageDiff {
 			done => {
 				// set resolution
 				driver.manage().window().setSize(resolution.width, resolution.height).then(err => {
-					const size = driver.manage().window().getSize();
 					done();
 					this.handleError(err);
 				});
@@ -138,6 +137,8 @@ class ImageDiff {
 			// save screenshots and
 			return this.processScreenshots(page.name, resolution, browser, test).then((result) => {
 				//console.log(result);
+				const size = driver.manage().window().getSize();
+				test.set('resolution', size);
 				if (result.message) {
 					deb(result.message);
 				}
@@ -165,7 +166,8 @@ class ImageDiff {
 				this.preparePaths(this.project.name, resolution, browser).then(paths => done(null, paths)).catch(done);
 			},
 			(paths, done) => {
-				setTimeout(() => done(null, paths), 0);
+				// wait for the pages to load
+				setTimeout(() => done(null, paths), 8000);
 			},
 			(paths, done) => {
 				//save screenshot
@@ -183,10 +185,10 @@ class ImageDiff {
 					expectedImage: `${file_paths.prev}/${name}.png`,
 					diffImage: `${file_paths.curr}/${name}_difference.png`,
 					shadow: true
-				}, result => done(null, result));
+				}, (err, result) => done(null, result));
 			}
 		];
-		async.waterfall(tasks, (err, result) => {
+		async.waterfall(tasks, (err, result, g) => {
 			if (err) {
 				return q.reject(err);
 			}
