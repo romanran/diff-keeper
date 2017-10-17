@@ -17,9 +17,8 @@
 				{
 					"by": "className",
 					"selector": "gsfi",
-					"action": "click",
-					"screenshotAfter": true,
-					"screenshotBefore": true
+					"event": "click",
+					"capture": true
 				}
 			]
 		}

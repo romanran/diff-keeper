@@ -10,7 +10,7 @@ function startTests() {
 			useColors: 1,
 			reporter: 'JSON'
 		});
-		mocha.addFile(path.resolve('./runTests.js'));
+		mocha.addFile(path.resolve('./scripts/runTests.js'));
 		mocha.run().on('end', function () {
 			resolve(this.testResults);
 		});
