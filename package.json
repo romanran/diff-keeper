@@ -1,48 +1,56 @@
 {
-  "name": "nr-tests",
+  "name": "diff-keeper",
   "version": "1.0.0",
-  "description": "nr-tests",
-  "main": "index.js",
+  "description": "diff-keeper",
+  "main": "scripts/Tester.js",
   "dependencies": {
     "assert": "^1.4.1",
     "async": "^2.5.0",
-    "chromedriver": "^2.32.3",
-    "express": "^4.15.4",
+    "bcrypt": "^1.0.3",
+    "chalk": "^2.1.0",
+    "chromedriver": "^2.33.1",
+    "express": "^4.16.2",
     "express-basic-auth": "^1.1.2",
     "express-handlebars": "^3.0.0",
     "fs-extra": "^4.0.2",
     "glob": "^7.1.2",
     "image-diff": "^1.6.3",
     "imagemagick": "^0.1.3",
-    "jshint": "^2.9.5",
     "lodash": "^4.17.4",
-    "mocha": "^3.5.0",
-    "moment": "^2.18.1",
+    "mocha": "^3.5.3",
+    "mocha-each": "^1.1.0",
+    "moment": "^2.19.1",
     "phantomjs": "^2.1.7",
-    "pm2": "^2.7.0",
-    "resemblejs": "^2.2.4",
-    "selenium-webdriver": "^3.5.0",
-    "serve-index": "^1.9.0"
+    "pm2": "^2.7.1",
+    "resemblejs": "^2.2.6",
+    "selenium-webdriver": "^3.6.0",
+    "serve-index": "^1.9.1"
   },
   "devDependencies": {
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1",
     "mocha-clean": "^1.0.0",
     "xunit-file": "^1.0.0"
   },
   "scripts": {
     "pm2": "pm2",
+    "mocha": "mocha",
+    "jshint": "jshint",
     "reporters": "mocha --reporters",
-    "watch": "pm2 start server.json",
-    "start": "mocha --require mocha-clean -R JSON index.js || true",
-    "new": "mocha --require mocha-clean -R JSON run.js",
-    "new:spec": "mocha --require mocha-clean -R spec run.js",
-    "test": "test",
-    "jshint": "jshint"
+    "serve": "pm2 start server/server.json && pm2 logs diff-keeper --raw",
+    "logs": "pm2 logs diff-keeper --raw",
+    "serve:dev": "SET NODE_ENV=\"development\" && pm2 start server/server.json && pm2 logs diff-keeper --raw",
+    "stop": "pm2 stop diff-keeper",
+    "exit": "npm run stop && pm2 delete diff-keeper",
+    "restart": "npm run exit && npm run serve:dev",
+    "start": "npm run serve",
+    "check": "jshint --reporter=node_modules/jshint-stylish --show-non-errors runTests.js main.js server/. scripts/. || ECHO"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://schinowski@bitbucket.org/schinowski/nr-tests.git"
+    "url": "git+https://schinowski@bitbucket.org/schinowski/diff-keeper.git"
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/schinowski/nr-tests#readme"
+  "homepage": "https://bitbucket.org/schinowski/diff-keeper#readme"
 }

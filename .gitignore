@@ -32,3 +32,7 @@ xunit\.xml
 screenshots/
 
 package-lock\.json
+
+\.idea/
+
+results/

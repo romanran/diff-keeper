@@ -1,0 +1,67 @@
+{
+	"name": "networkrail",
+	"browsers": [
+		"chrome"
+	],
+	"resolutions": [
+		{
+			"width": 1920,
+			"height": 1080
+		},
+		{
+			"height": 1024,
+			"width": 1366
+		},
+		{
+			"height": 856,
+			"width": 425
+		}
+	],
+	"pages": [
+		{
+			"name": "Homepage",
+			"url": "https://networkrail.co.uk/",
+			"elements": [
+				{
+					"by": "className",
+					"selector": "cookie_notification",
+					"action": "click",
+					"screenshotAfter": true,
+					"screenshotBefore": true
+				},
+				{
+					"by": "id",
+					"selector": "main-header"
+				}
+			]
+		},
+		{
+			"name": "Who we are",
+			"url": "https://www.networkrail.co.uk/who-we-are/",
+			"elements": [
+				{
+					"by": "className",
+					"selector": "cookie_notification"
+				},
+				{
+					"by": "id",
+					"selector": "main-header"
+				}
+			]
+		},
+		{
+			"name": "Railway upgrade plan",
+			"url": "https://www.networkrail.co.uk/our-railway-upgrade-plan/",
+			"elements": [
+				{
+					"by": "className",
+					"selector": "cookie_notification"
+				},
+				{
+					"by": "id",
+					"selector": "main-header"
+				}
+			]
+		}
+	]
+}
