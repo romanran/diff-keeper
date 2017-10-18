@@ -23,6 +23,7 @@
     "resemblejs": "^2.2.6",
     "selenium-webdriver": "^3.6.0",
     "serve-index": "^1.9.1",
+    "tap": "^10.7.2",
     "tap-json": "^1.0.0",
     "tape": "^4.8.0"
   },
