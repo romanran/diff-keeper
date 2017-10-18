@@ -167,7 +167,7 @@ class ImageDiff {
 			},
 			(paths, done) => {
 				// wait for the pages to load
-				setTimeout(() => done(null, paths), 8000);
+				setTimeout(() => done(null, paths), 1000);
 			},
 			(paths, done) => {
 				//save screenshot

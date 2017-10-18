@@ -55,7 +55,7 @@ app.use(basicAuth({
 }));
 
 app.get('/', function (req, res) {
-	fs.readdir('../screenshots', (err, files) => {
+	fs.readdir('./screenshots', (err, files) => {
 		let data = {
 			projects: files
 		};
@@ -63,25 +63,27 @@ app.get('/', function (req, res) {
 	});
 });
 
-app.get('/run-tests', (req, res) => {
+app.get('/:project/run-tests/', (req, res) => {
 	const Tests = require('../main');
-	Tests().then(result => {
+	Tests(req.params.project).then(result => {
 		res.render('results', result);
-	});
+	}).catch(err => {
+	    res.send(err);
+    });
 });
 
 app.get('/:project/', (req, res) => {
-	glob(`../screenshots/${req.params.project}/**/*.png`, (err, files) => {
-		if (err) return (err);
+	glob(`./screenshots/${req.params.project}/**/*.png`, (err, files) => {
+	    // deb(err, files);
+		if (err) return res(err);
 		//console.log(files);
 		files = _.reverse(_.sortBy(files, (file) => {
-			return path.parse(file).dir.split('/')[2];
+			return path.parse(file).dir.split('/')[3];
 		}));
 		const dates = _.groupBy(files, (file) => {
-			return path.parse(file).dir.split('/')[2];
+			return path.parse(file).dir.split('/')[3];
 		});
-		//console.log(dates);
-		res.render('project', {dates: dates});
+		res.render('project', {project: req.params.project, dates: dates});
 	});
 });
 
