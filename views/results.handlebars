@@ -2,21 +2,24 @@
 	<div class="card-header">
 		<h2>Test overview<h2>
 	</div>
-	<div class="card-body">
-		<div class="row">
-			<ul class="list-group w-100">
-				{{#each failures~}}
-					<li class="list-group-item list-group-item-danger">
-						<h4>{{fullTitle}}</h4>
-						<div>{{{err.message}}}</div>
-					</li>
-				{{~/each~}}
-				{{#each passes~}}
-					<li class="list-group-item list-group-item-success">
-						<h4>{{fullTitle}}</h4>
-					</li>
-				{{/each}}
-			</ul>
-		</div>
-	</div>
+    {{#if result}}
+        <div class="card-body">
+            <div class="row">
+                <ul class="list-group w-100">
+                    {{#each result.tests~}}
+                        {{#each err~}}
+                            <li class="list-group-item list-group-item-danger">
+                                <h4>{{../fullTitle}}</h4>
+                                <div>{{{message}}}</div>
+                            </li>
+                        {{~else~}}
+                            <li class="list-group-item list-group-item-success">
+                                <h4>{{fullTitle}}</h4>
+                            </li>
+                        {{/each}}
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+    {{/if}}
 </div>

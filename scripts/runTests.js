@@ -1,37 +1,36 @@
-const ImageDiff = require('./scripts/ImageDiff');
+const ImageDiff = require('./ImageDiff');
 const glob = require('glob');
+const path = require('path');
 const _ = require('lodash');
 const assert = require('assert');
 const forEach = require('mocha-each');
-
+let i = 0;
 describe('Screenshots', function () {
 	it('prepare', function (done) {
 		// this.timeout(0);
-		glob('./projects/*.json', function (err, files) {
-			for (let file of files) {
-				const project_json = require(file);
-				const Project = new ImageDiff(project_json);
-				Project.run().then(function () {
-					console.log(`Screenshots done for ${project_json.name}`);
-					done();
-					runTests(Project);
-				}).catch(err => {
-					console.log('ERROR', err);
-					done(err);
-				});
-			}
-		});
-	});
+        const file = global.project;
+        const project_json = cleanRequire(path.resolve(`./projects/${file}`));
+        const Project = new ImageDiff(project_json);
+        Project.run().then(function () {
+            done();
+            runTests(Project);
+        }).catch(err => {
+            console.log('ERROR', err);
+            done(err);
+        });
+    });
 });
 
 function runTests(Project) {
+    i++;
+    deb('RAN', i);
 	describe(`Project ${Project.project.name}`, function () {
 		it('project has necessary info', function () {
 			return assert.ok(Project.valid);
 		});
 	});
 	_.forEach(Project.tests, function (test) {
-		deb(test);
+		// deb(test);
 		describe(`${test.page.name} screenshot`, function () {
 			//
 			forEach(test.dom_elements)
