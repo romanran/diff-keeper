@@ -68,8 +68,8 @@ app.get('/', function (req, res) {
 });
 
 app.get('/:project/run-tests/', (req, res) => {
-	const Tests = require('../main');
-	Tests(req.params.project).then(result => {
+	const Test = require(path.resolve('./scripts/main'));
+	new Test(req.params.project).run().then(result => {
 		res.render('results', {project: req.params.project, result: result, test_result: result});
 	}).catch(err => {
 	    res.send(err);

@@ -24,8 +24,7 @@
     "selenium-webdriver": "^3.6.0",
     "serve-index": "^1.9.1",
     "tap": "^10.7.2",
-    "tap-json": "^1.0.0",
-    "tape": "^4.8.0"
+    "tap-json": "^1.0.0"
   },
   "devDependencies": {
     "jshint": "^2.9.5",
