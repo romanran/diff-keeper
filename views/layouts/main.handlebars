@@ -16,11 +16,16 @@
 					<li class="nav-item ">
 						<a class="nav-link" href="/">Homepage</a>
 					</li>
-					<li class="nav-item ">
-                        {{#if project }}
-						    <a class="nav-link" href="{{project}}/run-tests">Run tests</a>
-                        {{/if}}
-					</li>
+                    {{#if test_result}}
+                        <li class="nav-item ">
+                            <a class="nav-link" href="/{{project}}">See screenshots</a>
+                        </li>
+                    {{/if}}
+                    {{#if project }}
+                        <li class="nav-item ">
+                                <a class="nav-link" href="/{{project}}/run-tests">Run tests</a>
+                        </li>
+                    {{/if}}
 				</ul>
 			</div>
 		</nav>

@@ -17,6 +17,10 @@ deb = function () {
 	}
 };
 global.deb = deb;
+global.cleanRequire = function(file) {
+    delete require.cache[require.resolve(file)];
+    return require(file);
+};
 
 function authoriseUser(username, password, authorise) {
 	/*
@@ -66,7 +70,7 @@ app.get('/', function (req, res) {
 app.get('/:project/run-tests/', (req, res) => {
 	const Tests = require('../main');
 	Tests(req.params.project).then(result => {
-		res.render('results', result);
+		res.render('results', {project: req.params.project, result: result, test_result: result});
 	}).catch(err => {
 	    res.send(err);
     });

@@ -4,12 +4,12 @@ const path = require('path');
 const _ = require('lodash');
 const assert = require('assert');
 const forEach = require('mocha-each');
-
+let i = 0;
 describe('Screenshots', function () {
 	it('prepare', function (done) {
 		// this.timeout(0);
         const file = global.project;
-        const project_json = require(path.resolve(`./projects/${file}`));
+        const project_json = cleanRequire(path.resolve(`./projects/${file}`));
         const Project = new ImageDiff(project_json);
         Project.run().then(function () {
             done();
@@ -22,6 +22,8 @@ describe('Screenshots', function () {
 });
 
 function runTests(Project) {
+    i++;
+    deb('RAN', i);
 	describe(`Project ${Project.project.name}`, function () {
 		it('project has necessary info', function () {
 			return assert.ok(Project.valid);
