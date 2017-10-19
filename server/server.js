@@ -59,7 +59,8 @@ app.use(basicAuth({
 }));
 
 app.get('/', function (req, res) {
-	fs.readdir('./screenshots', (err, files) => {
+	fs.readdir('./projects', (err, files) => {
+	    files = _.map(files, file => file.replace('.json', ''));
 		let data = {
 			projects: files
 		};
