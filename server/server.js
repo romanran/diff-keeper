@@ -21,6 +21,15 @@ global.cleanRequire = function(file) {
     delete require.cache[require.resolve(file)];
     return require(file);
 };
+global.promise = function () {
+    let resolve, reject;
+    let q = new Promise((res, rej) => {
+        resolve = res;
+        reject = rej;
+    });
+    return {q: q, resolve: resolve, reject: reject};
+};
+
 
 function authoriseUser(username, password, authorise) {
 	/*

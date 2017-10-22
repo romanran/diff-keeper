@@ -8,15 +8,6 @@ const phantomjs = require('phantomjs');
 const webdriver = require('selenium-webdriver');
 const Test = require('./Test');
 
-const promise = function () {
-	let resolve, reject;
-	let q = new Promise((res, rej) => {
-		resolve = res;
-		reject = rej;
-	});
-	return {q: q, resolve: resolve, reject: reject};
-};
-
 webdriver.WebDriver.prototype.saveScreenshot = function (filename, driver) {
 	return new Promise((resolve, reject) => {
 		driver.takeScreenshot().then(function (data) {
@@ -116,23 +107,11 @@ class ImageDiff {
 					this.handleError(err);
 					setTimeout(() => {
 						return done(null);
-					}, 3000);
+					}, 2000);
 				});
 			}
 		);
-		_.forEach(page.elements, (element) => {
-			tasks.push(done => {
-				return driver.findElement(webdriver.By[element.by](element.selector)).then((webElement) => {
-					element.found = webElement;
-					test.set('dom_elements', []);
-					test.add('dom_elements', element);
-					return done(null);
-				}, (err) => {
-					this.handleError(err);
-					return done(null);
-				});
-			});
-		});
+
 		tasks.push(done => {
 			// save screenshots and
 			return this.processScreenshots(page.name, resolution, browser, test).then((result) => {
@@ -149,6 +128,20 @@ class ImageDiff {
 				done(null);
 			});
 		});
+
+        _.forEach(page.elements, (element) => {
+            tasks.push(done => {
+                return driver.findElement(webdriver.By[element.by](element.selector)).then((webElement) => {
+                    element.found = webElement;
+                    test.set('dom_elements', []);
+                    test.add('dom_elements', element);
+                    return done(null);
+                }, (err) => {
+                    this.handleError(err);
+                    return done(null);
+                });
+            });
+        });
 
 		async.series(tasks, err => {
 			this.handleError(err);
@@ -167,7 +160,7 @@ class ImageDiff {
 			},
 			(paths, done) => {
 				// wait for the pages to load
-				setTimeout(() => done(null, paths), 1000);
+				setTimeout(() => done(null, paths), 100);
 			},
 			(paths, done) => {
 				//save screenshot
@@ -188,7 +181,7 @@ class ImageDiff {
 				}, (err, result) => done(null, result));
 			}
 		];
-		async.waterfall(tasks, (err, result, g) => {
+		async.waterfall(tasks, (err, result) => {
 			if (err) {
 				return q.reject(err);
 			}
